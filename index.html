@@ -1,0 +1,39 @@
+<html>
+<head>
+<title>Linux Voice anonymous chat</title>
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/aes.js"></script>
+<script src="http://www.strictly-software.com/scripts/downloads/encoder.js"></script>
+
+<script>    
+var socket = io.connect('http://localhost:9999');
+socket.on('news', function (data) {
+  console.log(data);
+  var decrypted = CryptoJS.AES.decrypt(data.data, document.getElementById("key").value);
+  if (decrypted.toString(CryptoJS.enc.Utf8) != "") {
+    var safeString = Encoder.htmlEncode(decrypted.toString(CryptoJS.enc.Utf8));
+    document.getElementById("chat").innerHTML +=  safeString + "</br>"; 
+  }
+});
+  
+function send() {
+  var encrypted = CryptoJS.AES.encrypt(document.getElementById("msg").value, document.getElementById("key").value);
+  socket.emit('news', {data:encrypted.toString()});
+}
+	
+</script>
+</head>
+<body>
+
+<h1>Chat!</h1>
+
+Welcome to Linux Voice's anonymous encrypted chat. You can see the source code to the server <a href="/sourcecode">here</a>
+
+<p>Encryption Key: <input id="key" type="text"></input>
+
+<div id="chat">
+</div>
+
+<input id="msg" type="text"></input>
+<input type="button" value="Send" onClick="send();">
+
